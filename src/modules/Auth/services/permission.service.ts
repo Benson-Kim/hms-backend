@@ -93,12 +93,11 @@ export class PermissionService {
 		action: string;
 	}): Promise<Permission> {
 		// Check if permission already exists
-		const existingPermission = await this.permissionRepository.findOne({
-			where: {
-				resource: createPermissionDto.resource,
-				action: createPermissionDto.action,
-			},
-		});
+		const existingPermission = await this.checkPermissionExists(
+			createPermissionDto.name,
+			createPermissionDto.resource,
+			createPermissionDto.action
+		);
 
 		if (existingPermission) {
 			throw new ConflictError(
@@ -160,5 +159,16 @@ export class PermissionService {
 			permissionId: id,
 			name: permission.name,
 		});
+	}
+
+	private async checkPermissionExists(
+		name: string,
+		resource: string,
+		action: string
+	): Promise<boolean> {
+		const existingPermission = await this.permissionRepository.findOne({
+			where: { name, resource, action },
+		});
+		return !!existingPermission;
 	}
 }

@@ -7,6 +7,7 @@ import {
 	validateBody,
 	validateQuery,
 	validateParams,
+	validateBodyArray,
 } from "@/core/middleware/validation.middleware";
 import { UUIDDto, PaginationDto } from "@/shared/dto/base.dto";
 import { CreatePermissionDto, UpdatePermissionDto } from "../dto/auth.dto";
@@ -38,6 +39,13 @@ router.post(
 	requirePermission("PERMISSION", "CREATE"),
 	validateBody(CreatePermissionDto),
 	permissionController.create
+);
+
+router.post(
+	"/batch",
+	requirePermission("PERMISSION", "CREATE"),
+	validateBodyArray(CreatePermissionDto),
+	permissionController.createBatch
 );
 
 // Get permission by ID

@@ -122,6 +122,143 @@ export class PermissionController {
 		}
 	);
 
+	createBatch = asyncHandler(
+		async (
+			req: AuthenticatedRequest,
+			res: Response,
+			next: NextFunction
+		): Promise<void> => {
+			try {
+				const dtos: CreatePermissionDto[] = req.body;
+				const permissions: unknown[] = [];
+
+				// Define types for better type safety
+				interface BatchDuplicate {
+					index: number;
+					resource: string;
+					action: string;
+					name: string;
+					conflictsWith: number;
+				}
+
+				interface ProcessingError {
+					index: number;
+					name: string;
+					resource: string;
+					action: string;
+					error: string;
+				}
+
+				const errors: ProcessingError[] = [];
+
+				// Check for duplicates within the batch first
+				const resourceActionMap = new Map<string, number>();
+				const batchDuplicates: BatchDuplicate[] = [];
+
+				dtos.forEach((dto, index) => {
+					const key = `${dto.resource}:${dto.action}`;
+					if (resourceActionMap.has(key)) {
+						batchDuplicates.push({
+							index,
+							resource: dto.resource,
+							action: dto.action,
+							name: dto.name,
+							conflictsWith: resourceActionMap.get(key)!,
+						});
+					} else {
+						resourceActionMap.set(key, index);
+					}
+				});
+
+				if (batchDuplicates.length > 0) {
+					logger.warn("Duplicate resource:action combinations found in batch", {
+						userId: req.user?.id,
+						duplicates: batchDuplicates,
+					});
+
+					const duplicateErrors = batchDuplicates.map((d) => ({
+						field: `permissions[${d.index}]`,
+						message: `Duplicate resource:action combination "${d.resource}:${d.action}" with permissions[${d.conflictsWith}]`,
+					}));
+
+					ResponseUtil.error(
+						res,
+						`Duplicate resource:action combinations found in batch`,
+						400,
+						duplicateErrors
+					);
+					return;
+				}
+
+				// Process each permission
+				for (let i = 0; i < dtos.length; i++) {
+					const dto = dtos[i];
+					try {
+						const permission = await this.permissionService.create(dto);
+						permissions.push(permission);
+					} catch (error) {
+						const errorMessage =
+							error instanceof Error ? error.message : "Unknown error";
+						errors.push({
+							index: i,
+							name: dto.name,
+							resource: dto.resource,
+							action: dto.action,
+							error: errorMessage,
+						});
+
+						logger.error("Failed to create individual permission", {
+							userId: req.user?.id,
+							index: i,
+							permission: dto,
+							error: errorMessage,
+						});
+					}
+				}
+
+				// If there are any errors, return detailed information
+				if (errors.length > 0) {
+					logger.error("Some permissions failed to create", {
+						userId: req.user?.id,
+						successCount: permissions.length,
+						errorCount: errors.length,
+						errors,
+					});
+
+					const formattedErrors = errors.map((e) => ({
+						field: `permissions[${e.index}]`,
+						message: `${e.name} (${e.resource}:${e.action}): ${e.error}`,
+					}));
+
+					ResponseUtil.error(
+						res,
+						`Failed to create ${errors.length} out of ${dtos.length} permissions. ${permissions.length} were created successfully.`,
+						400,
+						formattedErrors
+					);
+				}
+
+				logger.info("Permissions batch created successfully", {
+					userId: req.user?.id,
+					count: permissions.length,
+				});
+
+				ResponseUtil.success(
+					res,
+					permissions,
+					"Permissions batch created successfully",
+					201
+				);
+			} catch (error) {
+				logger.error("Failed to create permissions batch", {
+					userId: req.user?.id,
+					error: error instanceof Error ? error.message : "Unknown error",
+				});
+				next(error);
+			}
+		}
+	);
+
 	update = asyncHandler(
 		async (
 			req: AuthenticatedRequest,

@@ -1,4 +1,5 @@
 // src/modules/auth/dto/auth.dto.ts
+import { Type } from "class-transformer";
 import {
 	IsEmail,
 	IsNotEmpty,
@@ -9,6 +10,9 @@ import {
 	IsOptional,
 	IsUUID,
 	IsBoolean,
+	IsArray,
+	ArrayMinSize,
+	ValidateNested,
 } from "class-validator";
 
 export class LoginDto {
@@ -171,6 +175,17 @@ export class CreatePermissionDto {
 	@IsNotEmpty({ message: "Action is required" })
 	@MaxLength(50, { message: "Action cannot exceed 50 characters" })
 	action!: string;
+}
+
+export class BatchCreatePermissionDto {
+	@IsArray({ message: "Permissions must be an array" })
+	@ArrayMinSize(1, { message: "At least one permission is required" })
+	@ValidateNested({
+		each: true,
+		message: "Each permission must be a valid object",
+	})
+	@Type(() => CreatePermissionDto)
+	permissions!: CreatePermissionDto[];
 }
 
 export class UpdatePermissionDto {
