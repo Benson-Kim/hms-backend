@@ -13,6 +13,7 @@ import {
 	PatientConsent,
 	PatientDocument,
 } from "@/modules/Registration/entities";
+import { Medication } from "@/modules/Pharmacy/entities/medication.entity";
 
 export const AppDataSource = new DataSource({
 	type: "postgres",
@@ -35,6 +36,7 @@ export const AppDataSource = new DataSource({
 		Address,
 		NextOfKin,
 		InsuranceDetail,
+		Medication,
 		// Add other entities here as modules are created
 	],
 	migrations: ["dist/shared/migrations/*.js"],

@@ -14,6 +14,7 @@ import { securityMiddleware } from "../core/middleware/security.middleware";
 import { errorMiddleware } from "../core/middleware/error.middleware";
 import { rateLimitMiddleware } from "../core/middleware/rate-limit.middleware";
 import { patientRegistrationRoutes } from "@/modules/Registration/routes/patient-registration.route";
+import { medicationRoutes } from "@/modules/Pharmacy/routes/medication.routes";
 
 export function createApp(): express.Application {
 	const app = express();
@@ -79,6 +80,7 @@ export function createApp(): express.Application {
 	app.use(`${apiPrefix}/permissions`, permissionRoutes);
 
 	app.use(`${apiPrefix}/patient-register`, patientRegistrationRoutes);
+	app.use(`${apiPrefix}/pharmacy/medication`, medicationRoutes);
 
 	// 404 handler
 	app.use("*", (req, res) => {
