@@ -6,18 +6,17 @@ import {
 	validateQuery,
 	validateParams,
 } from "@/core/middleware/validation.middleware";
-import { UUIDDto } from "@/shared/dto/base.dto";
 import { PatientController } from "../controllers/patient-registration.controller";
 import {
-	PatientCreateDto,
-	PatientUpdateDto,
-	DocumentUploadDto,
 	ConsentDto,
-	PatientSearchParams,
-	InsuranceDetailDto,
-	PatientIdDto,
 	documentIdDto,
-} from "../dtos/patient-registration.dto";
+	DocumentUploadDto,
+	InsuranceDetailDto,
+	PatientCreateDto,
+	PatientIdDto,
+	PatientSearchParams,
+	PatientUpdateDto,
+} from "../dtos";
 
 const router = Router();
 const patientController = new PatientController();
@@ -34,31 +33,31 @@ router.post(
 );
 
 router.put(
-	"/:id",
+	"/:patientId",
 	requirePermission("PATIENT", "UPDATE"),
-	validateParams(UUIDDto),
+	validateParams(PatientIdDto),
 	validateBody(PatientUpdateDto),
 	patientController.updatePatientInfo
 );
 
 router.patch(
-	"/:id/deactivate",
+	"/:patientId/deactivate",
 	requirePermission("PATIENT", "UPDATE"),
-	validateParams(UUIDDto),
+	validateParams(PatientIdDto),
 	patientController.deactivatePatient
 );
 
 router.patch(
-	"/:id/activate",
+	"/:patientId/activate",
 	requirePermission("PATIENT", "UPDATE"),
-	validateParams(UUIDDto),
+	validateParams(PatientIdDto),
 	patientController.activatePatient
 );
 
 router.patch(
-	"/:id/deceased",
+	"/:patientId/deceased",
 	requirePermission("PATIENT", "UPDATE"),
-	validateParams(UUIDDto),
+	validateParams(PatientIdDto),
 	patientController.markPatientDeceased
 );
 
@@ -71,9 +70,9 @@ router.get(
 );
 
 router.get(
-	"/:id",
+	"/:patientId",
 	requirePermission("PATIENT", "VIEW"),
-	validateParams(UUIDDto),
+	validateParams(PatientIdDto),
 	patientController.getPatientById
 );
 

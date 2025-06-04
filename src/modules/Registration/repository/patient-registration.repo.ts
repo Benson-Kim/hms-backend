@@ -3,7 +3,7 @@ import { AppDataSource } from "@/config/database";
 import { PaginatedResponseDto } from "@/shared/dto/base.dto";
 import { Patient } from "../entities";
 import { PatientStatus } from "@/core/types/patient.types";
-import { PatientSearchParams } from "../dtos/patient-registration.dto";
+import { PatientSearchParams } from "../dtos";
 
 interface DuplicateSearchParams {
 	nationalId?: string;

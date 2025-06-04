@@ -11,18 +11,7 @@ import { AppDataSource } from "@/config/database";
 import { logger } from "@/core/utils/logger.util";
 
 import { EntityManager, Repository, MoreThanOrEqual } from "typeorm";
-import {
-	NextOfKinDto,
-	PatientCreateDto,
-	PatientUpdateDto,
-	DocumentUploadDto,
-	ConsentDto,
-	PatientSearchParams,
-	InsuranceDetailDto,
-	VerificationResult,
-	PatientStatisticsDto,
-	MonthlyRegistrationDto,
-} from "../dtos/patient-registration.dto";
+
 import { PatientRepository } from "../repository/patient-registration.repo";
 import {
 	Patient,
@@ -30,6 +19,18 @@ import {
 	PatientStatus,
 	Gender,
 } from "@/core/types/patient.types";
+import {
+	ConsentDto,
+	DocumentUploadDto,
+	InsuranceDetailDto,
+	MonthlyRegistrationDto,
+	NextOfKinDto,
+	PatientCreateDto,
+	PatientSearchParams,
+	PatientStatisticsDto,
+	PatientUpdateDto,
+	VerificationResult,
+} from "../dtos";
 
 export class PatientService {
 	private patientRepository: PatientRepository;
@@ -215,23 +216,6 @@ export class PatientService {
 		}
 	}
 
-	async deactivatePatient(id: string): Promise<Patient> {
-		const patient = await this.patientRepository.findOne({ where: { id } });
-		if (!patient) {
-			throw new NotFoundError("Patient not found");
-		}
-
-		patient.status = PatientStatus.INACTIVE;
-		const updatedPatient = await this.patientRepository.save(patient);
-
-		logger.info("Patient deactivated:", {
-			patientId: id,
-			mrn: patient.mrn,
-		});
-
-		return updatedPatient;
-	}
-
 	async verifyInsurance(
 		insuranceDetails: InsuranceDetailDto
 	): Promise<VerificationResult> {
@@ -354,6 +338,9 @@ export class PatientService {
 			validUntil: consentData.validUntil
 				? new Date(consentData.validUntil)
 				: undefined,
+			recordedBy: consentData.recordedBy,
+			witnessName: consentData.witnessName,
+			// witnessSignature: consentData.witnessSignature,
 			consentDocument: consentData.consentDocument,
 			notes: consentData.notes,
 			status: ConsentStatus.ACTIVE,

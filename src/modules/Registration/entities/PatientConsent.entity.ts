@@ -27,6 +27,15 @@ export class PatientConsent {
 	@Column()
 	consentType!: string;
 
+	@Column()
+	recordedBy!: string;
+
+	@Column({ nullable: true })
+	witnessName?: string;
+
+	@Column({ nullable: true })
+	witnessSignature?: string;
+
 	@Column({ type: "date" })
 	consentDate!: Date;
 
